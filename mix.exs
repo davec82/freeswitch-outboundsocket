@@ -35,6 +35,7 @@ defmodule App.Mixfile do
   defp deps do
     [
       {:credo, "~> 0.8.10"},
+      {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
       {:ranch, "~> 1.4"},
       {:excoveralls, "~> 0.7.5", only: :test}
     ]
