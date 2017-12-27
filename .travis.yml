@@ -1,0 +1,12 @@
+language: elixir
+sudo: false
+elixir:
+  - 1.4
+  - 1.5
+otp_release:
+  - 19.3
+  - 20.0
+script: mix test.ci
+after_script:
+  - mix deps.get --only docs
+  - MIX_ENV=docs mix inch.report
