@@ -30,7 +30,7 @@ defmodule App.Mixfile do
     [
       {:credo, "~> 0.8.10", only: [:dev, :test]},
       {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
-      {:ranch, "~> 1.4"},
+      {:ranch, "~> 1.3.2"},
       {:inch_ex, "~> 0.5", only: :docs},
       {:excoveralls, "~> 0.7.5", only: :test}
     ]
