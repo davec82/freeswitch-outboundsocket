@@ -6,7 +6,8 @@ elixir:
 otp_release:
   - 19.3
   - 20.0
-script: mix test.ci
+script:
+  - "MIX_ENV=test mix do deps.get, compile, coveralls.travis"
 after_script:
   - mix deps.get --only docs
   - MIX_ENV=docs mix inch.report
