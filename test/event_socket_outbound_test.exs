@@ -8,6 +8,24 @@ defmodule EventSocketOutbound.Test do
     :ok
   end
 
+  describe "public api" do
+    test "use custom listener port" do
+      ref = make_ref()
+      {:ok, _} = EventSocketOutbound.start_link([port: 5080, ref: ref])
+      assert :ranch.get_port(ref) == 5080
+      :ok = :ranch.stop_listener(ref)
+    end
+
+    test "use custom acceptors number" do
+      ref = make_ref()
+      {:ok, _} = EventSocketOutbound.start_link([acceptors: 25, ref: ref])
+      infos = :ranch.info()
+      {^ref, options} = Enum.at(infos, 0)
+      assert options[:num_acceptors] == 25
+      :ok = :ranch.stop_listener(ref)
+    end
+  end
+
   describe "send commands and receive events" do
     test "eventplain command" do
       test_pid = load_call_mgt_module()
