@@ -1,4 +1,6 @@
 defmodule EventSocketOutbound.ExampleCallMgmt do
+  @behaviour EventSocketOutbound.CallMgmt
+
   use GenServer
   alias EventSocketOutbound.Protocol, as: EventProtocol
 
@@ -24,6 +26,7 @@ defmodule EventSocketOutbound.ExampleCallMgmt do
     EventProtocol.hangup(state.tcp_server)
     {:noreply, state}
   end
+
   @doc false
   def handle_cast({:event, _event}, state) do
     {:noreply, state}

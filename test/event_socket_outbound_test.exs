@@ -1,4 +1,6 @@
 defmodule EventSocketOutbound.Test do
+  @moduledoc false
+ 
   use ExUnit.Case, async: true
   alias EventSocketOutbound.Protocol, as: EventProtocol
   alias EventSocketOutbound.Test.Support.SoftswitchEvent
