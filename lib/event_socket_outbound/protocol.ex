@@ -1,8 +1,15 @@
 defmodule EventSocketOutbound.Protocol do
   use GenServer
-
+  @moduledoc """
+  Protocol handler starts a connection process and defines logic for FreeSWITCH events and protocol.
+  """
   @behaviour :ranch_protocol
 
+  @doc """
+  Once the connection is accepted, run this command in order to get all information about  the call.
+  For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/Event+Socket+Outbound#EventSocketOutbound-UsingNetcat).
+  """
+  @spec connect(pid) :: term
   def connect(pid) do
     GenServer.call(pid, {:connect})
   end
@@ -11,44 +18,86 @@ defmodule EventSocketOutbound.Protocol do
   #  GenServer.call(pid, {{:auth}, {args}})
   #end
 
+  @doc """
+  Filtered events will come to the app.
+  For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/mod_event_socket#mod_event_socket-filter).
+  """
+  @spec filter(pid, String.t) :: term
   def filter(pid, args) do
     GenServer.call(pid, {{:filter}, {args}})
   end
 
+  @doc """
+  Enable or disable events by class or all.
+  For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/mod_event_socket#mod_event_socket-event).
+  """
+  @spec eventplain(pid, String.t) :: term
   def eventplain(pid, args) do
     GenServer.call(pid, {{:eventplain}, {args}})
   end
 
+  @doc """
+  It will "lock on" to the events for a particular uuid and will ignore all other events.
+  For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/mod_event_socket#mod_event_socket-SpecialCase-'myevents').
+  """
+  @spec myevents(pid) :: term
   def myevents(pid) do
     GenServer.call(pid, {:myevents})
   end
 
+  @doc """
+  Execute a dialplan application, and wait for a response from the server.
+  For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/mod_event_socket#mod_event_socket-execute).
+  """
+  @spec execute(pid, String.t, String.t) :: term
   def execute(pid, command, args) do
     GenServer.call(pid, {{:execute}, {command, args}})
   end
 
+  @doc """
+  Send an api command.
+  For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/mod_event_socket#mod_event_socket-api).
+  """
+  @spec api(pid, String.t, String.t) :: term
   def api(pid, command, args) do
     GenServer.call(pid, {{:api}, {command, args}})
   end
 
+  @doc """
+  Send a conference command.
+  For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/mod_conference#mod_conference-ConferenceDialplanApplication).
+  """
+  @spec conference(pid, String.t) :: term
   def conference(pid, args) do
     GenServer.call(pid, {{:conference}, {args}})
   end
 
+  @doc """
+  Hangs the call.
+  For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/Event+Socket+Outbound).
+  """
+  @spec hangup(pid, String.t) :: term
   def hangup(pid, reason \\ "") do
     GenServer.call(pid, {{:hangup}, {reason}})
   end
 
+  @doc """
+  Answers the call.
+  For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/Event+Socket+Outbound#EventSocketOutbound-UsingNetcat).
+  """
+  @spec answer(pid) :: term
   def answer(pid) do
     GenServer.call(pid, {:answer})
   end
 
+  @spec start_link(reference, any, module, any) :: {:ok, pid}
   def start_link(ref, socket, transport, module_protocol) do
     pid = :proc_lib.spawn_link(__MODULE__, :init,
       [ref, socket, transport, module_protocol])
     {:ok, pid}
   end
 
+  @doc false
   def init(ref, socket, transport, module_protocol) do
     :ok = module_protocol.accept_ack(ref)
     :ok = transport.setopts(socket, [:binary, packet: :raw, active: true])
@@ -159,7 +208,7 @@ defmodule EventSocketOutbound.Protocol do
     {:stop, :shutdown, state}
   end
 
-  def parse_event(data, body) do
+  defp parse_event(data, body) do
     case String.contains?(data, ["text/disconnect-notice", "api/response"]) do
       true ->
         header_map = parse_key_value(data)

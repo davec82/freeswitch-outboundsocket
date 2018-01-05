@@ -1,4 +1,11 @@
 defmodule EventSocketOutbound do
+  @moduledoc """
+  A wrapper to start a TCP listener suitable for FreeSWITCH event socket outbound.
+  """
+
+  @doc """
+  Start a TCP listener which implements a protocol handler for FreeSwitch events and commands
+  """
   def start_link(opts \\ []) do
     port = Keyword.get(opts, :port, 8084)
     acceptors = Keyword.get(opts, :acceptors, 10)
