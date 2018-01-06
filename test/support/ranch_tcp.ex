@@ -34,6 +34,8 @@ defmodule EventSocketOutbound.Test.RanchTcp do
         :api
       String.match?(data, ~r/filter Unique-ID 4192e98c-e569-11e7-b747-73bec77e82ec/) ->
         :filter
+      String.match?(data, ~r/linger/) ->
+        :linger
       true ->
         :unknown
     end

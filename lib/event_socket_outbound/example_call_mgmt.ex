@@ -1,4 +1,7 @@
 defmodule EventSocketOutbound.ExampleCallMgmt do
+  @moduledoc """
+  Sample module implements call routing logic
+  """
   @behaviour EventSocketOutbound.CallMgmt
 
   use GenServer

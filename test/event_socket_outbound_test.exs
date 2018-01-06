@@ -194,6 +194,23 @@ defmodule EventSocketOutbound.Test do
       assert_receive %{filter: :ok}, 5000
     end
 
+    test "linger command" do
+      test_pid = load_call_mgt_module()
+      conn_pid = start_protocol_server(test_pid)
+
+      Task.start(fn() ->
+        EventProtocol.linger(conn_pid)
+        send(test_pid, %{linger: :ok})
+        :timer.sleep(:infinity)
+      end)
+
+      assert_receive :linger, 5000
+      Task.start(fn() ->
+        send(conn_pid, {:tcp, "socket", SoftswitchEvent.command_reply()})
+      end)
+      assert_receive %{linger: :ok}, 5000
+    end
+
     test "tcp connection closed" do
       test_pid = load_call_mgt_module()
       conn_pid = start_protocol_server(test_pid)

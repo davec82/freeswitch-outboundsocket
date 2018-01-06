@@ -28,6 +28,15 @@ defmodule EventSocketOutbound.Protocol do
   end
 
   @doc """
+  Not to close the socket connect when a channel hangs up.
+  For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/mod_event_socket#mod_event_socket-linger).
+  """
+  @spec linger(pid, String.t) :: term
+  def linger(pid, args \\ "") do
+    GenServer.call(pid, {{:linger}, {args}})
+  end
+  
+  @doc """
   Enable or disable events by class or all.
   For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/mod_event_socket#mod_event_socket-event).
   """
@@ -142,6 +151,11 @@ defmodule EventSocketOutbound.Protocol do
     cmd = Atom.to_string(:myevents)
     sendcmd(state, cmd)
     {:noreply, %{state | cmds: cmds ++ [{from, cmd}]}}
+  end
+
+  def handle_call({{:linger}, {args}}, from, %{cmds: cmds} = state) do
+    sendcmd(state, "linger " <> args)
+    {:noreply, %{state | cmds: cmds ++ [{from, "linger"}]}}
   end
 
   def handle_call({{:filter}, {args}}, from, %{cmds: cmds} = state) do
