@@ -13,14 +13,14 @@ defmodule EventSocketOutbound.Test do
   describe "public api" do
     test "use custom listener port" do
       ref = make_ref()
-      {:ok, _} = EventSocketOutbound.start_link([port: 5080, ref: ref])
+      {:ok, _} = EventSocketOutbound.start([port: 5080, ref: ref])
       assert :ranch.get_port(ref) == 5080
       :ok = :ranch.stop_listener(ref)
     end
 
     test "use custom acceptors number" do
       ref = make_ref()
-      {:ok, _} = EventSocketOutbound.start_link([acceptors: 25, ref: ref])
+      {:ok, _} = EventSocketOutbound.start([acceptors: 25, ref: ref])
       infos = :ranch.info()
       {^ref, options} = Enum.at(infos, 0)
       assert options[:num_acceptors] == 25
