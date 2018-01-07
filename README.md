@@ -26,13 +26,17 @@ where MySample.Call will be a module that implements EventSocketOutbound.CallMgm
 
 1. Start `EventSocketOutbound` without options.
 ```elixir
-> EventSocketOutbound.start
+>Application.start(:ranch)
+:ok
+>EventSocketOutbound.start
 {:ok, #PID<0.172.0>}
 ```
 
 2. Start `EventSocketOutbound` with options.
 ```elixir
-> EventSocketOutbound.start port: 8090, acceptors: 50
+>Application.start(:ranch)
+:ok
+>EventSocketOutbound.start port: 8090, acceptors: 50
 {:ok, #PID<0.174.0>}
 ```
 

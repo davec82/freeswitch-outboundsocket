@@ -5,16 +5,15 @@ defmodule App.Mixfile do
     [
       app: :event_socket_outbound,
       version: "0.1.0",
-      #build_path: "../../_build",
-      #config_path: "../../config/config.exs",
-      #deps_path: "../../deps",
-      #lockfile: "../../mix.lock",
       elixir: "~> 1.4",
       build_embedded: Mix.env == :prod,
       elixirc_paths: elixirc_paths(Mix.env),
       start_permanent: Mix.env == :prod,
+      description: description(),
+      package: package(),
       deps: deps(),
       aliases: aliases(),
+      source_url: "https://github.com/davec82/freeswitch-outboundsocket",
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
         "coveralls": :test, "coveralls.detail": :test,
@@ -35,6 +34,18 @@ defmodule App.Mixfile do
       {:ex_doc, "~> 0.11", only: :dev},
       {:inch_ex, "~> 0.5", only: :docs},
       {:excoveralls, "~> 0.7.5", only: :test}
+    ]
+  end
+
+  defp description() do
+    "An Elixir protocol for the FreeSWITCH's Event Socket, providing support for outbound method."
+  end
+ 
+  defp package() do
+    [
+      maintainers: ["Davide Colombo"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/davec82/freeswitch-outboundsocket"}
     ]
   end
 
