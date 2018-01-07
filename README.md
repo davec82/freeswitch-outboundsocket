@@ -40,3 +40,9 @@ where MySample.Call will be a module that implements EventSocketOutbound.CallMgm
 ```elixir
 child_spec = :ranch.child_spec(ref, 10, :ranch_tcp, [{:port, 8084}], EventSocketOutbound.Protocol :ranch)
 ```
+
+## Copyright and License
+
+Copyright (c) 2018, Davide Colombo.
+
+EventSocketOutbound source code is licensed under the [MIT License](LICENSE.md).
