@@ -10,7 +10,7 @@ Add event_socket_outbound to your list of dependencies in `mix.exs`:
 
 ```elixir
     def deps do
-      [{:event_socket_outbound, "~> 0.0.1"}]
+      [{:event_socket_outbound, "~> 0.1.0"}]
     end
 ```
 ## Getting started
