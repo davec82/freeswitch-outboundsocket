@@ -1,10 +1,12 @@
 defmodule App.Mixfile do
   use Mix.Project
 
+  @version "0.1.0"
+
   def project do
     [
       app: :event_socket_outbound,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.4",
       build_embedded: Mix.env == :prod,
       elixirc_paths: elixirc_paths(Mix.env),
@@ -14,6 +16,8 @@ defmodule App.Mixfile do
       deps: deps(),
       aliases: aliases(),
       source_url: "https://github.com/davec82/freeswitch-outboundsocket",
+      docs: [source_ref: "v#{@version}", canonical: "http://hexdocs.pm/event_socket_outbound",
+        source_url: "https://github.com/davec82/freeswitch-outboundsocket"],
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
         "coveralls": :test, "coveralls.detail": :test,
