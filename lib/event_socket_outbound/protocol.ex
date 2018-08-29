@@ -35,7 +35,7 @@ defmodule EventSocketOutbound.Protocol do
   def linger(pid, args \\ "") do
     GenServer.call(pid, {{:linger}, {args}})
   end
-  
+
   @doc """
   Enable or disable events by class or all.
   For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/mod_event_socket#mod_event_socket-event).
@@ -300,6 +300,7 @@ defmodule EventSocketOutbound.Protocol do
     {:noreply, state}
   end
   defp event_cb(%{"Content-Type" => "text/disconnect-notice"}, state) do
+    Enum.each(state.cmds, fn(cmd) -> GenServer.reply(elem(cmd, 0), {:error, "text/disconnect-notice"}) end)
     {:stop, :shutdown, state}
   end
   defp event_cb(_event, state) do

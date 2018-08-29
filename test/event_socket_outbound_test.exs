@@ -1,6 +1,6 @@
 defmodule EventSocketOutbound.Test do
   @moduledoc false
- 
+
   use ExUnit.Case, async: true
   alias EventSocketOutbound.Protocol, as: EventProtocol
   alias EventSocketOutbound.Test.Support.SoftswitchEvent
@@ -228,6 +228,23 @@ defmodule EventSocketOutbound.Test do
       send(conn_pid, {:tcp, "socket", SoftswitchEvent.disconnect_header()})
       send(conn_pid, {:tcp, "socket", SoftswitchEvent.disconnect()})
       assert_receive {:DOWN, ^ref, :process, _, _}, 5000
+    end
+
+    test "receive disconnect event before reply a command" do
+      test_pid = load_call_mgt_module()
+      conn_pid = start_protocol_server(test_pid)
+      Process.flag(:trap_exit, true)
+
+      Task.start(fn() ->
+        {:error, _} = EventProtocol.answer(conn_pid)
+        send(test_pid, %{answer: :error})
+        :timer.sleep(:infinity)
+      end)
+
+      assert_receive :answer, 5000
+      send(conn_pid, {:tcp, "socket", SoftswitchEvent.disconnect_header()})
+      send(conn_pid, {:tcp, "socket", SoftswitchEvent.disconnect()})
+      assert_receive %{answer: :error}, 5000
     end
   end
 
