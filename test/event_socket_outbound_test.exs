@@ -13,14 +13,14 @@ defmodule EventSocketOutbound.Test do
   describe "public api" do
     test "use custom listener port" do
       ref = make_ref()
-      {:ok, _} = EventSocketOutbound.start([port: 5080, ref: ref])
+      {:ok, _} = EventSocketOutbound.start(port: 5080, ref: ref)
       assert :ranch.get_port(ref) == 5080
       :ok = :ranch.stop_listener(ref)
     end
 
     test "use custom acceptors number" do
       ref = make_ref()
-      {:ok, _} = EventSocketOutbound.start([acceptors: 25, ref: ref])
+      {:ok, _} = EventSocketOutbound.start(acceptors: 25, ref: ref)
       infos = :ranch.info()
       {^ref, options} = Enum.at(infos, 0)
       assert options[:num_acceptors] == 25
@@ -32,13 +32,16 @@ defmodule EventSocketOutbound.Test do
     test "eventplain command" do
       test_pid = load_call_mgt_module()
       conn_pid = start_protocol_server(test_pid)
-      Task.start(fn() ->
+
+      Task.start(fn ->
         EventProtocol.eventplain(conn_pid, "CHANNEL_EXECUTE_COMPLETE")
         send(test_pid, %{user_pid: :ok})
         :timer.sleep(:infinity)
       end)
+
       assert_receive :eventplain, 5000
-      Task.start(fn() ->
+
+      Task.start(fn ->
         send(conn_pid, {:tcp, "socket", SoftswitchEvent.command_reply()})
       end)
 
@@ -46,7 +49,7 @@ defmodule EventSocketOutbound.Test do
     end
 
     test "parse event plain" do
-      #Event channel state
+      # Event channel state
       test_pid = load_call_mgt_module()
       conn_pid = start_protocol_server(test_pid)
       send(conn_pid, {:tcp, "socket", SoftswitchEvent.channel_state_header()})
@@ -63,13 +66,16 @@ defmodule EventSocketOutbound.Test do
     test "connect command" do
       test_pid = load_call_mgt_module()
       conn_pid = start_protocol_server(test_pid)
-      Task.start(fn() ->
+
+      Task.start(fn ->
         EventProtocol.connect(conn_pid)
         send(test_pid, %{connect: :ok})
         :timer.sleep(:infinity)
       end)
+
       assert_receive :connect, 5000
-      Task.start(fn() ->
+
+      Task.start(fn ->
         send(conn_pid, {:tcp, "socket", SoftswitchEvent.channel_data()})
       end)
 
@@ -79,13 +85,16 @@ defmodule EventSocketOutbound.Test do
     test "myevents command" do
       test_pid = load_call_mgt_module()
       conn_pid = start_protocol_server(test_pid)
-      Task.start(fn() ->
+
+      Task.start(fn ->
         EventProtocol.myevents(conn_pid)
         send(test_pid, %{myevents: :ok})
         :timer.sleep(:infinity)
       end)
+
       assert_receive :myevents, 5000
-      Task.start(fn() ->
+
+      Task.start(fn ->
         send(conn_pid, {:tcp, "socket", SoftswitchEvent.command_reply()})
       end)
 
@@ -96,16 +105,18 @@ defmodule EventSocketOutbound.Test do
       test_pid = load_call_mgt_module()
       conn_pid = start_protocol_server(test_pid)
 
-      Task.start(fn() ->
+      Task.start(fn ->
         EventProtocol.answer(conn_pid)
         send(test_pid, %{answer: :ok})
         :timer.sleep(:infinity)
       end)
 
       assert_receive :answer, 5000
-      Task.start(fn() ->
+
+      Task.start(fn ->
         send(conn_pid, {:tcp, "socket", SoftswitchEvent.command_reply()})
       end)
+
       assert_receive %{answer: :ok}, 5000
     end
 
@@ -113,16 +124,18 @@ defmodule EventSocketOutbound.Test do
       test_pid = load_call_mgt_module()
       conn_pid = start_protocol_server(test_pid)
 
-      Task.start(fn() ->
+      Task.start(fn ->
         EventProtocol.conference(conn_pid, "admin:example@default")
         send(test_pid, %{conference: :ok})
         :timer.sleep(:infinity)
       end)
 
       assert_receive :conference, 5000
-      Task.start(fn() ->
+
+      Task.start(fn ->
         send(conn_pid, {:tcp, "socket", SoftswitchEvent.command_reply()})
       end)
+
       assert_receive %{conference: :ok}, 5000
     end
 
@@ -130,16 +143,18 @@ defmodule EventSocketOutbound.Test do
       test_pid = load_call_mgt_module()
       conn_pid = start_protocol_server(test_pid)
 
-      Task.start(fn() ->
+      Task.start(fn ->
         EventProtocol.hangup(conn_pid)
         send(test_pid, %{hangup: :ok})
         :timer.sleep(:infinity)
       end)
 
       assert_receive :hangup, 5000
-      Task.start(fn() ->
+
+      Task.start(fn ->
         send(conn_pid, {:tcp, "socket", SoftswitchEvent.command_reply()})
       end)
+
       assert_receive %{hangup: :ok}, 5000
     end
 
@@ -147,16 +162,18 @@ defmodule EventSocketOutbound.Test do
       test_pid = load_call_mgt_module()
       conn_pid = start_protocol_server(test_pid)
 
-      Task.start(fn() ->
+      Task.start(fn ->
         EventProtocol.execute(conn_pid, "voicemail", "default $${domain} 1000")
         send(test_pid, %{execute: :ok})
         :timer.sleep(:infinity)
       end)
 
       assert_receive :execute, 5000
-      Task.start(fn() ->
+
+      Task.start(fn ->
         send(conn_pid, {:tcp, "socket", SoftswitchEvent.command_reply()})
       end)
+
       assert_receive %{execute: :ok}, 5000
     end
 
@@ -164,16 +181,23 @@ defmodule EventSocketOutbound.Test do
       test_pid = load_call_mgt_module()
       conn_pid = start_protocol_server(test_pid)
 
-      Task.start(fn() ->
-        EventProtocol.api(conn_pid, "uuid_dump", "538c7d22-e705-11e7-bc33-73bec77e82ec")
+      Task.start(fn ->
+        EventProtocol.api(
+          conn_pid,
+          "uuid_dump",
+          "538c7d22-e705-11e7-bc33-73bec77e82ec"
+        )
+
         send(test_pid, %{api: :ok})
         :timer.sleep(:infinity)
       end)
 
       assert_receive :api, 5000
-      Task.start(fn() ->
+
+      Task.start(fn ->
         send(conn_pid, {:tcp, "socket", SoftswitchEvent.api_response()})
       end)
+
       assert_receive %{api: :ok}, 5000
     end
 
@@ -181,16 +205,22 @@ defmodule EventSocketOutbound.Test do
       test_pid = load_call_mgt_module()
       conn_pid = start_protocol_server(test_pid)
 
-      Task.start(fn() ->
-        EventProtocol.filter(conn_pid, "Unique-ID 4192e98c-e569-11e7-b747-73bec77e82ec")
+      Task.start(fn ->
+        EventProtocol.filter(
+          conn_pid,
+          "Unique-ID 4192e98c-e569-11e7-b747-73bec77e82ec"
+        )
+
         send(test_pid, %{filter: :ok})
         :timer.sleep(:infinity)
       end)
 
       assert_receive :filter, 5000
-      Task.start(fn() ->
+
+      Task.start(fn ->
         send(conn_pid, {:tcp, "socket", SoftswitchEvent.command_reply()})
       end)
+
       assert_receive %{filter: :ok}, 5000
     end
 
@@ -198,16 +228,18 @@ defmodule EventSocketOutbound.Test do
       test_pid = load_call_mgt_module()
       conn_pid = start_protocol_server(test_pid)
 
-      Task.start(fn() ->
+      Task.start(fn ->
         EventProtocol.linger(conn_pid)
         send(test_pid, %{linger: :ok})
         :timer.sleep(:infinity)
       end)
 
       assert_receive :linger, 5000
-      Task.start(fn() ->
+
+      Task.start(fn ->
         send(conn_pid, {:tcp, "socket", SoftswitchEvent.command_reply()})
       end)
+
       assert_receive %{linger: :ok}, 5000
     end
 
@@ -235,7 +267,7 @@ defmodule EventSocketOutbound.Test do
       conn_pid = start_protocol_server(test_pid)
       Process.flag(:trap_exit, true)
 
-      Task.start(fn() ->
+      Task.start(fn ->
         {:error, _} = EventProtocol.answer(conn_pid)
         send(test_pid, %{answer: :error})
         :timer.sleep(:infinity)
@@ -248,9 +280,15 @@ defmodule EventSocketOutbound.Test do
     end
   end
 
-    defp start_protocol_server(test_pid) do
-    {:ok, conn_pid} = EventProtocol.start_link("ref", test_pid,
-      EventSocketOutbound.Test.RanchTcp, EventSocketOutbound.Test.Ranch)
+  defp start_protocol_server(test_pid) do
+    {:ok, conn_pid} =
+      EventProtocol.start_link(
+        "ref",
+        test_pid,
+        EventSocketOutbound.Test.RanchTcp,
+        EventSocketOutbound.Test.Ranch
+      )
+
     conn_pid
   end
 
@@ -261,7 +299,6 @@ defmodule EventSocketOutbound.Test do
   end
 
   defp call_mgt() do
-
     defmodule Call do
       use GenServer
 

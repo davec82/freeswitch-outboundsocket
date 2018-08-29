@@ -1,5 +1,4 @@
 defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
-
   def channel_state_header do
     """
     Content-Length: 646
@@ -7,6 +6,7 @@ defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
 
     """
   end
+
   def channel_state() do
     """
     Channel-State: CS_EXECUTE

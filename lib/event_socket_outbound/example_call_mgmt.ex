@@ -43,7 +43,10 @@ defmodule EventSocketOutbound.ExampleCallMgmt do
     {:ok, _} = EventProtocol.eventplain(state.tcp_server, "PLAYBACK_STOP")
     {:ok, _} = EventProtocol.answer(state.tcp_server)
     playback_args = "ivr/ivr-welcome.wav"
-    {:ok, _} = EventProtocol.execute(state.tcp_server, "playback", playback_args)
+
+    {:ok, _} =
+      EventProtocol.execute(state.tcp_server, "playback", playback_args)
+
     {:noreply, state}
   end
 end

@@ -7,17 +7,20 @@ defmodule App.Mixfile do
     [
       app: :event_socket_outbound,
       version: @version,
-      elixir: "~> 1.4",
-      build_embedded: Mix.env == :prod,
-      elixirc_paths: elixirc_paths(Mix.env),
-      start_permanent: Mix.env == :prod,
+      elixir: "~> 1.6",
+      build_embedded: Mix.env() == :prod,
+      elixirc_paths: elixirc_paths(Mix.env()),
+      start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
       deps: deps(),
       aliases: aliases(),
       source_url: "https://github.com/davec82/freeswitch-outboundsocket",
-      docs: [source_ref: "v#{@version}", canonical: "http://hexdocs.pm/event_socket_outbound",
-        source_url: "https://github.com/davec82/freeswitch-outboundsocket"],
+      docs: [
+        source_ref: "v#{@version}",
+        canonical: "http://hexdocs.pm/event_socket_outbound",
+        source_url: "https://github.com/davec82/freeswitch-outboundsocket"
+      ],
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
         coveralls: :test,
@@ -29,7 +32,7 @@ defmodule App.Mixfile do
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_),     do: ["lib"]
+  defp elixirc_paths(_), do: ["lib"]
 
   defp deps do
     [
@@ -51,7 +54,9 @@ defmodule App.Mixfile do
     [
       maintainers: ["Davide Colombo"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/davec82/freeswitch-outboundsocket"}
+      links: %{
+        "GitHub" => "https://github.com/davec82/freeswitch-outboundsocket"
+      }
     ]
   end
 
@@ -60,13 +65,21 @@ defmodule App.Mixfile do
   end
 
   defp test_ci(args) do
-    args = if IO.ANSI.enabled?, do: ["--color"|args], else: ["--no-color"|args]
-    args = if System.get_env("TRAVIS_SECURE_ENV_VARS") == "true", do: ["--include=integration"|args], else: args
+    args =
+      if IO.ANSI.enabled?(), do: ["--color" | args], else: ["--no-color" | args]
 
-    {_, res} = System.cmd("mix",
-                          ["test"|args],
-                          into: IO.binstream(:stdio, :line),
-                          env: [{"MIX_ENV", "test"}])
+    args =
+      if System.get_env("TRAVIS_SECURE_ENV_VARS") == "true",
+        do: ["--include=integration" | args],
+        else: args
+
+    {_, res} =
+      System.cmd(
+        "mix",
+        ["test" | args],
+        into: IO.binstream(:stdio, :line),
+        env: [{"MIX_ENV", "test"}]
+      )
 
     if res > 0 do
       System.at_exit(fn _ -> exit({:shutdown, 1}) end)

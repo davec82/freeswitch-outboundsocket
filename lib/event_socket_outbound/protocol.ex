@@ -1,5 +1,6 @@
 defmodule EventSocketOutbound.Protocol do
   use GenServer
+
   @moduledoc """
   Protocol handler starts a connection process and defines logic for FreeSWITCH events and protocol.
   """
@@ -14,15 +15,15 @@ defmodule EventSocketOutbound.Protocol do
     GenServer.call(pid, {:connect})
   end
 
-  #def auth(pid, args) do
+  # def auth(pid, args) do
   #  GenServer.call(pid, {{:auth}, {args}})
-  #end
+  # end
 
   @doc """
   Filtered events will come to the app.
   For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/mod_event_socket#mod_event_socket-filter).
   """
-  @spec filter(pid, String.t) :: term
+  @spec filter(pid, String.t()) :: term
   def filter(pid, args) do
     GenServer.call(pid, {{:filter}, {args}})
   end
@@ -31,7 +32,7 @@ defmodule EventSocketOutbound.Protocol do
   Not to close the socket connect when a channel hangs up.
   For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/mod_event_socket#mod_event_socket-linger).
   """
-  @spec linger(pid, String.t) :: term
+  @spec linger(pid, String.t()) :: term
   def linger(pid, args \\ "") do
     GenServer.call(pid, {{:linger}, {args}})
   end
@@ -40,7 +41,7 @@ defmodule EventSocketOutbound.Protocol do
   Enable or disable events by class or all.
   For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/mod_event_socket#mod_event_socket-event).
   """
-  @spec eventplain(pid, String.t) :: term
+  @spec eventplain(pid, String.t()) :: term
   def eventplain(pid, args) do
     GenServer.call(pid, {{:eventplain}, {args}})
   end
@@ -58,7 +59,7 @@ defmodule EventSocketOutbound.Protocol do
   Execute a dialplan application, and wait for a response from the server.
   For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/mod_event_socket#mod_event_socket-execute).
   """
-  @spec execute(pid, String.t, String.t) :: term
+  @spec execute(pid, String.t(), String.t()) :: term
   def execute(pid, command, args) do
     GenServer.call(pid, {{:execute}, {command, args}})
   end
@@ -67,7 +68,7 @@ defmodule EventSocketOutbound.Protocol do
   Send an api command.
   For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/mod_event_socket#mod_event_socket-api).
   """
-  @spec api(pid, String.t, String.t) :: term
+  @spec api(pid, String.t(), String.t()) :: term
   def api(pid, command, args) do
     GenServer.call(pid, {{:api}, {command, args}})
   end
@@ -76,7 +77,7 @@ defmodule EventSocketOutbound.Protocol do
   Send a conference command.
   For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/mod_conference#mod_conference-ConferenceDialplanApplication).
   """
-  @spec conference(pid, String.t) :: term
+  @spec conference(pid, String.t()) :: term
   def conference(pid, args) do
     GenServer.call(pid, {{:conference}, {args}})
   end
@@ -85,7 +86,7 @@ defmodule EventSocketOutbound.Protocol do
   Hangs the call.
   For further details, refer to  FreeSWITCH [docs](https://freeswitch.org/confluence/display/FREESWITCH/Event+Socket+Outbound).
   """
-  @spec hangup(pid, String.t) :: term
+  @spec hangup(pid, String.t()) :: term
   def hangup(pid, reason \\ "") do
     GenServer.call(pid, {{:hangup}, {reason}})
   end
@@ -101,8 +102,14 @@ defmodule EventSocketOutbound.Protocol do
 
   @spec start_link(reference, any, module, any) :: {:ok, pid}
   def start_link(ref, socket, transport, module_protocol) do
-    pid = :proc_lib.spawn_link(__MODULE__, :init,
-      [ref, socket, transport, module_protocol])
+    pid =
+      :proc_lib.spawn_link(__MODULE__, :init, [
+        ref,
+        socket,
+        transport,
+        module_protocol
+      ])
+
     {:ok, pid}
   end
 
@@ -110,13 +117,27 @@ defmodule EventSocketOutbound.Protocol do
   def init(ref, socket, transport, module_protocol) do
     :ok = module_protocol.accept_ack(ref)
     :ok = transport.setopts(socket, [:binary, packet: :raw, active: true])
-    config = Application.get_env(:event_socket_outbound,
-      EventSocketOutbound.Call.Manager, [])
-    call_mgt_adapter = config[:call_mgt_adapter] || EventSocketOutbound.ExampleCallMgmt
+
+    config =
+      Application.get_env(
+        :event_socket_outbound,
+        EventSocketOutbound.Call.Manager,
+        []
+      )
+
+    call_mgt_adapter =
+      config[:call_mgt_adapter] || EventSocketOutbound.ExampleCallMgmt
+
     {:ok, call_mgt} = call_mgt_adapter.start_link(self())
-    :gen_server.enter_loop(__MODULE__, [], %{cmds: [], buffer: "",
-      socket: socket, transport: transport, call_mgt: call_mgt,
-      call_mgt_adapter: call_mgt_adapter})
+
+    :gen_server.enter_loop(__MODULE__, [], %{
+      cmds: [],
+      buffer: "",
+      socket: socket,
+      transport: transport,
+      call_mgt: call_mgt,
+      call_mgt_adapter: call_mgt_adapter
+    })
   end
 
   @doc false
@@ -168,10 +189,10 @@ defmodule EventSocketOutbound.Protocol do
     {:noreply, %{state | cmds: cmds ++ [{from, "filter"}]}}
   end
 
-  #def handle_call({{:auth}, {args}}, from, %{cmds: cmds} = state) do
+  # def handle_call({{:auth}, {args}}, from, %{cmds: cmds} = state) do
   #  sendcmd(state, "auth " <> args)
   #  {:noreply, %{state | cmds: cmds ++ [{from, "filter"}]}}
-  #end
+  # end
 
   def handle_call({{:eventplain}, {args}}, from, %{cmds: cmds} = state) do
     sendcmd(state, "event plain " <> args)
@@ -193,36 +214,48 @@ defmodule EventSocketOutbound.Protocol do
 
         case String.contains?(aux_buffer, "Content-Length") do
           true ->
-            [_match|[content_length]] = Regex.run(~r/Content-Length: (\d+)\n/,
-              aux_buffer)
+            [_match | [content_length]] =
+              Regex.run(
+                ~r/Content-Length: (\d+)\n/,
+                aux_buffer
+              )
+
             content_length = :erlang.binary_to_integer(content_length)
 
             case String.length(new_buffer) >= content_length do
               true ->
                 {body, new_buffer} = String.split_at(new_buffer, content_length)
-                event =  parse_event(data, body)
+                event = parse_event(data, body)
                 response = event_cb(event, state)
                 build_event_cb_response(response, new_buffer)
-                #{response, %{new_state | buffer: new_buffer}}
+
+              # {response, %{new_state | buffer: new_buffer}}
               false ->
                 {:noreply, %{state | buffer: aux_buffer}}
             end
+
           false ->
-            decode_value = case String.contains?(data, "CHANNEL_DATA") do
+            decode_value =
+              case String.contains?(data, "CHANNEL_DATA") do
                 true -> true
                 _ -> false
               end
+
             event = parse_key_value(data, decode_value)
             response = event_cb(event, state)
             build_event_cb_response(response, new_buffer)
-            #{response, %{new_state | buffer: new_buffer}}
+            # {response, %{new_state | buffer: new_buffer}}
         end
+
       false ->
         {:noreply, %{state | buffer: aux_buffer}}
     end
   end
 
-  def handle_info({:tcp_closed, _}, %{socket: socket, transport: transport} = state) do
+  def handle_info(
+        {:tcp_closed, _},
+        %{socket: socket, transport: transport} = state
+      ) do
     transport.close(socket)
     {:stop, :shutdown, state}
   end
@@ -233,20 +266,22 @@ defmodule EventSocketOutbound.Protocol do
         header_map = parse_key_value(data)
         body_map = parse_rawdata(body)
         Map.merge(header_map, body_map)
+
       false ->
         header_map = parse_key_value(data)
         body_map = parse_key_value(body)
         Map.merge(header_map, body_map)
     end
-
   end
 
   defp parse_key_value(data, decode_value \\ true) do
-    values = data
+    values =
+      data
       |> String.trim()
       |> String.replace(" ", "")
       |> String.split("\n")
-    Enum.reduce(values, %{}, fn(v, acc) ->
+
+    Enum.reduce(values, %{}, fn v, acc ->
       case String.split(v, ":") do
         [key, value] -> Map.put(acc, key, parse_value(value, decode_value))
         _ -> acc
@@ -276,38 +311,49 @@ defmodule EventSocketOutbound.Protocol do
   defp event_cb(%{"Content-Type" => "command/reply"} = event, state) do
     {cmd, new_cmds} = List.pop_at(state.cmds, 0)
     reply_text = Map.get(event, "Reply-Text")
-    #Reply to client with status
-    response = case String.starts_with?(reply_text, "+OK") do
+    # Reply to client with status
+    response =
+      case String.starts_with?(reply_text, "+OK") do
         true -> :ok
         _ -> :error
       end
+
     GenServer.reply(elem(cmd, 0), {response, event})
     {:noreply, %{state | cmds: new_cmds}}
   end
 
-  #defp event_cb(%{"Content-Type" => "auth/request"} = event, state) do
+  # defp event_cb(%{"Content-Type" => "auth/request"} = event, state) do
   #  {:noreply, state}
-  #end
+  # end
 
   defp event_cb(%{"Content-Type" => "api/response"} = event, state) do
     {cmd, new_cmds} = List.pop_at(state.cmds, 0)
     raw_response = Map.get(event, "rawresponse")
-    response = case String.starts_with?(raw_response, "+OK") do
-      true -> :ok
-      _ -> :error
-    end
+
+    response =
+      case String.starts_with?(raw_response, "+OK") do
+        true -> :ok
+        _ -> :error
+      end
+
     GenServer.reply(elem(cmd, 0), {response, event})
     {:noreply, %{state | cmds: new_cmds}}
   end
+
   defp event_cb(%{"Content-Type" => "text/event-plain"} = event, state) do
     call_mgt_adapter = state.call_mgt_adapter
     call_mgt_adapter.onEvent(state.call_mgt, event)
     {:noreply, state}
   end
+
   defp event_cb(%{"Content-Type" => "text/disconnect-notice"}, state) do
-    Enum.each(state.cmds, fn(cmd) -> GenServer.reply(elem(cmd, 0), {:error, "text/disconnect-notice"}) end)
+    Enum.each(state.cmds, fn cmd ->
+      GenServer.reply(elem(cmd, 0), {:error, "text/disconnect-notice"})
+    end)
+
     {:stop, :shutdown, state}
   end
+
   defp event_cb(_event, state) do
     {:noreply, state}
   end
@@ -323,9 +369,17 @@ defmodule EventSocketOutbound.Protocol do
     options = Keyword.merge(defaults, options) |> Enum.into(%{})
     %{args: args, uuid: uuid, lock: lock} = options
     transport = state.transport
-    transport.send(state.socket, "sendmsg " <> uuid <> "\ncall-command: execute\n")
+
+    transport.send(
+      state.socket,
+      "sendmsg " <> uuid <> "\ncall-command: execute\n"
+    )
+
     transport.send(state.socket, "execute-app-name: " <> name <> "\n")
-    unless is_nil(args), do: transport.send(state.socket, "execute-app-arg: " <> args <> "\n")
+
+    unless is_nil(args),
+      do: transport.send(state.socket, "execute-app-arg: " <> args <> "\n")
+
     transport.send(state.socket, "event-lock: " <> lock <> "\n")
     transport.send(state.socket, "\n\n")
   end
