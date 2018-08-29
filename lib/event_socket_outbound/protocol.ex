@@ -119,6 +119,11 @@ defmodule EventSocketOutbound.Protocol do
       call_mgt_adapter: call_mgt_adapter})
   end
 
+  @doc false
+  def init(args) do
+    {:ok, args}
+  end
+
   def handle_call({{:execute}, {command, args}}, from, %{cmds: cmds} = state) do
     sendmsg(state, command, args: args, lock: "true")
     {:noreply, %{state | cmds: cmds ++ [{from, "execute"}]}}

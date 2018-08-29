@@ -20,8 +20,10 @@ defmodule App.Mixfile do
         source_url: "https://github.com/davec82/freeswitch-outboundsocket"],
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
-        "coveralls": :test, "coveralls.detail": :test,
-        "coveralls.post": :test, "coveralls.html": :test
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
       ]
     ]
   end
@@ -44,7 +46,7 @@ defmodule App.Mixfile do
   defp description() do
     "An Elixir protocol for the FreeSWITCH's Event Socket, providing support for outbound method."
   end
- 
+
   defp package() do
     [
       maintainers: ["Davide Colombo"],
