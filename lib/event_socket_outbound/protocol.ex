@@ -1,5 +1,6 @@
 defmodule EventSocketOutbound.Protocol do
   use GenServer
+  require Logger
 
   @moduledoc """
   Protocol handler starts a connection process and defines logic for FreeSWITCH events and protocol.
@@ -133,6 +134,7 @@ defmodule EventSocketOutbound.Protocol do
     :gen_server.enter_loop(__MODULE__, [], %{
       cmds: [],
       buffer: "",
+      disconnect: false,
       socket: socket,
       transport: transport,
       call_mgt: call_mgt,
@@ -207,49 +209,8 @@ defmodule EventSocketOutbound.Protocol do
 
   def handle_info({:tcp, _sock, data}, %{buffer: buffer} = state) do
     aux_buffer = buffer <> data
-
-    case String.contains?(aux_buffer, "\n\n") do
-      true ->
-        [data, new_buffer] = String.split(aux_buffer, "\n\n", parts: 2)
-
-        case String.contains?(aux_buffer, "Content-Length") do
-          true ->
-            [_match | [content_length]] =
-              Regex.run(
-                ~r/Content-Length: (\d+)\n/,
-                aux_buffer
-              )
-
-            content_length = :erlang.binary_to_integer(content_length)
-
-            case String.length(new_buffer) >= content_length do
-              true ->
-                {body, new_buffer} = String.split_at(new_buffer, content_length)
-                event = parse_event(data, body)
-                response = event_cb(event, state)
-                build_event_cb_response(response, new_buffer)
-
-              # {response, %{new_state | buffer: new_buffer}}
-              false ->
-                {:noreply, %{state | buffer: aux_buffer}}
-            end
-
-          false ->
-            decode_value =
-              case String.contains?(data, "CHANNEL_DATA") do
-                true -> true
-                _ -> false
-              end
-
-            event = parse_key_value(data, decode_value)
-            response = event_cb(event, state)
-            build_event_cb_response(response, new_buffer)
-            # {response, %{new_state | buffer: new_buffer}}
-        end
-
-      false ->
-        {:noreply, %{state | buffer: aux_buffer}}
-    end
+    new_state = parse_buffer(state, aux_buffer)
+    build_event_cb_response(new_state)
   end
 
   def handle_info(
@@ -258,6 +219,71 @@ defmodule EventSocketOutbound.Protocol do
       ) do
     transport.close(socket)
     {:stop, :shutdown, state}
+  end
+
+  defp parse_buffer(state, "") do
+    %{state | buffer: ""}
+  end
+
+  defp parse_buffer(state, buffer) do
+    case String.contains?(buffer, "\n\n") do
+      true ->
+        [data, rest] = String.split(buffer, "\n\n", parts: 2)
+
+        case String.contains?(data, "Content-Length") do
+          true ->
+            [_match | [content_length]] =
+              Regex.run(
+                ~r/Content-Length: (\d+)/,
+                data
+              )
+
+            content_length = :erlang.binary_to_integer(content_length)
+
+            maybe_event_is_complete(
+              state,
+              buffer,
+              data,
+              rest,
+              content_length
+            )
+
+          false ->
+            decode_value = is_channel_data_event?(data)
+            event = parse_key_value(data, decode_value)
+            new_state = event_cb(event, state)
+            parse_buffer(new_state, rest)
+        end
+
+      false ->
+        %{state | buffer: buffer}
+    end
+  end
+
+  defp maybe_event_is_complete(
+         state,
+         old_buffer,
+         header,
+         rest,
+         content_length
+       ) do
+    case String.length(rest) >= content_length do
+      true ->
+        {event_body, new_rest} = String.split_at(rest, content_length)
+        event = parse_event(header, event_body)
+        new_state = event_cb(event, state)
+        parse_buffer(new_state, new_rest)
+
+      false ->
+        %{state | buffer: old_buffer}
+    end
+  end
+
+  defp is_channel_data_event?(data) do
+    case String.contains?(data, "CHANNEL_DATA") do
+      true -> true
+      _ -> false
+    end
   end
 
   defp parse_event(data, body) do
@@ -283,8 +309,11 @@ defmodule EventSocketOutbound.Protocol do
 
     Enum.reduce(values, %{}, fn v, acc ->
       case String.split(v, ":") do
-        [key, value] -> Map.put(acc, key, parse_value(value, decode_value))
-        _ -> acc
+        [key, value] ->
+          Map.put(acc, key, parse_value(value, decode_value))
+
+        _ ->
+          acc
       end
     end)
   end
@@ -300,12 +329,12 @@ defmodule EventSocketOutbound.Protocol do
     %{"rawresponse" => data}
   end
 
-  defp build_event_cb_response({:noreply, state}, new_buffer) do
-    {:noreply, %{state | buffer: new_buffer}}
+  defp build_event_cb_response(%{disconnect: true} = state) do
+    {:stop, :shutdown, state}
   end
 
-  defp build_event_cb_response({:stop, reason, state}, _) do
-    {:stop, reason, state}
+  defp build_event_cb_response(state) do
+    {:noreply, state}
   end
 
   defp event_cb(%{"Content-Type" => "command/reply"} = event, state) do
@@ -319,7 +348,7 @@ defmodule EventSocketOutbound.Protocol do
       end
 
     GenServer.reply(elem(cmd, 0), {response, event})
-    {:noreply, %{state | cmds: new_cmds}}
+    %{state | cmds: new_cmds}
   end
 
   # defp event_cb(%{"Content-Type" => "auth/request"} = event, state) do
@@ -337,13 +366,14 @@ defmodule EventSocketOutbound.Protocol do
       end
 
     GenServer.reply(elem(cmd, 0), {response, event})
-    {:noreply, %{state | cmds: new_cmds}}
+    %{state | cmds: new_cmds}
   end
 
   defp event_cb(%{"Content-Type" => "text/event-plain"} = event, state) do
     call_mgt_adapter = state.call_mgt_adapter
     call_mgt_adapter.onEvent(state.call_mgt, event)
-    {:noreply, state}
+    Logger.error("state on event cb text plain is #{inspect(state)}")
+    state
   end
 
   defp event_cb(%{"Content-Type" => "text/disconnect-notice"}, state) do
@@ -351,11 +381,11 @@ defmodule EventSocketOutbound.Protocol do
       GenServer.reply(elem(cmd, 0), {:error, "text/disconnect-notice"})
     end)
 
-    {:stop, :shutdown, state}
+    %{state | disconnect: true}
   end
 
   defp event_cb(_event, state) do
-    {:noreply, state}
+    state
   end
 
   defp sendcmd(state, cmd) do

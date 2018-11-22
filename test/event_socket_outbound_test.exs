@@ -48,6 +48,35 @@ defmodule EventSocketOutbound.Test do
       assert_receive %{user_pid: :ok}, 5000
     end
 
+    test "parse command reply and event in the same data" do
+      part1 = SoftswitchEvent.command_reply_and_event_part1()
+      part2 = SoftswitchEvent.command_reply_and_event_part2()
+      part3 = SoftswitchEvent.command_reply_and_event_part3()
+      part4 = SoftswitchEvent.command_reply_and_event_part4()
+      part5 = SoftswitchEvent.command_reply_and_event_part5()
+      part6 = SoftswitchEvent.command_reply_and_event_part6()
+      part7 = SoftswitchEvent.command_reply_and_event_part7()
+      test_pid = load_call_mgt_module()
+      conn_pid = start_protocol_server(test_pid)
+
+      Task.start(fn ->
+        EventProtocol.answer(conn_pid)
+        send(test_pid, %{answer: :ok})
+        :timer.sleep(:infinity)
+      end)
+
+      assert_receive :answer, 5000
+
+      parts = [part1, part2, part3, part4, part5, part6, part7]
+
+      Enum.each(parts, fn part -> send(conn_pid, {:tcp, "socket", part}) end)
+
+      assert_receive %{answer: :ok}, 5000
+
+      assert_receive %{event: %{"Event-Name" => "CHANNEL_EXECUTE_COMPLETE"}},
+                     5000
+    end
+
     test "parse event plain" do
       # Event channel state
       test_pid = load_call_mgt_module()
