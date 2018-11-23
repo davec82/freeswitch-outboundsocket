@@ -41,7 +41,8 @@ defmodule App.Mixfile do
       {:ranch, "~> 1.3.2"},
       {:ex_doc, "~> 0.18", only: :docs, runtime: false},
       {:inch_ex, "~> 0.5", only: :docs},
-      {:excoveralls, "~> 0.7.5", only: :test}
+      {:excoveralls, "~> 0.7.5", only: :test},
+      {:stream_data, "~> 0.3", only: :test}
     ]
   end
 

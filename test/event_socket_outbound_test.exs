@@ -48,6 +48,74 @@ defmodule EventSocketOutbound.Test do
       assert_receive %{user_pid: :ok}, 5000
     end
 
+    test "split received data in random chunks" do
+      test_pid = load_call_mgt_module()
+      conn_pid = start_protocol_server(test_pid)
+
+      data =
+        SoftswitchEvent.command_reply() <>
+          SoftswitchEvent.channel_state_header() <>
+          SoftswitchEvent.channel_state()
+
+      randoms = Enum.take(StreamData.integer(1..500), 100)
+
+      Enum.each(randoms, fn chunk_part ->
+        Task.start(fn ->
+          EventProtocol.answer(conn_pid)
+          send(test_pid, %{answer: :ok})
+          :timer.sleep(:infinity)
+        end)
+
+        assert_receive :answer, 5000
+
+        chunks =
+          data
+          |> Stream.unfold(&String.split_at(&1, chunk_part))
+          |> Enum.take_while(&(&1 != ""))
+
+        Task.start(fn ->
+          Enum.each(chunks, fn chunk ->
+            send(conn_pid, {:tcp, "socket", chunk})
+          end)
+        end)
+
+        assert_receive %{answer: :ok}, 5000
+        assert_receive %{event: %{"Event-Name" => "CHANNEL_STATE"}}, 5000
+      end)
+    end
+
+    test "split received data once in a radom position" do
+      test_pid = load_call_mgt_module()
+      conn_pid = start_protocol_server(test_pid)
+
+      data =
+        SoftswitchEvent.command_reply() <>
+          SoftswitchEvent.channel_state_header() <>
+          SoftswitchEvent.channel_state()
+
+      randoms = Enum.take(StreamData.integer(1..(String.length(data) - 1)), 100)
+
+      Enum.each(randoms, fn pos_split ->
+        Task.start(fn ->
+          EventProtocol.answer(conn_pid)
+          send(test_pid, %{answer: :ok})
+          :timer.sleep(:infinity)
+        end)
+
+        assert_receive :answer, 5000
+
+        {part1, part2} = String.split_at(data, pos_split)
+
+        Task.start(fn ->
+          send(conn_pid, {:tcp, "socket", part1})
+          send(conn_pid, {:tcp, "socket", part2})
+        end)
+
+        assert_receive %{answer: :ok}, 5000
+        assert_receive %{event: %{"Event-Name" => "CHANNEL_STATE"}}, 5000
+      end)
+    end
+
     test "parse command reply and event in the same data" do
       part1 = SoftswitchEvent.command_reply_and_event_part1()
       part2 = SoftswitchEvent.command_reply_and_event_part2()
@@ -90,6 +158,27 @@ defmodule EventSocketOutbound.Test do
       test_pid = load_call_mgt_module()
       conn_pid = start_protocol_server(test_pid)
       send(conn_pid, {:tcp, "socket", "fake\nevent\n\n"})
+    end
+
+    test "parse command and fake event" do
+      test_pid = load_call_mgt_module()
+      conn_pid = start_protocol_server(test_pid)
+
+      Task.start(fn ->
+        EventProtocol.connect(conn_pid)
+        send(test_pid, %{connect: :ok})
+        :timer.sleep(:infinity)
+      end)
+
+      assert_receive :connect, 5000
+
+      data = SoftswitchEvent.channel_data() <> "fake\nevent\n\n"
+
+      Task.start(fn ->
+        send(conn_pid, {:tcp, "socket", data})
+      end)
+
+      assert_receive %{connect: :ok}, 5000
     end
 
     test "connect command" do
