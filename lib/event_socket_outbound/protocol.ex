@@ -395,8 +395,11 @@ defmodule EventSocketOutbound.Protocol do
   end
 
   defp sendmsg(state, name, options) do
-    defaults = [args: nil, uuid: "", lock: "false"]
-    options = Keyword.merge(defaults, options) |> Enum.into(%{})
+    options =
+      [args: nil, uuid: "", lock: "false"]
+      |> Keyword.merge(options)
+      |> Enum.into(%{})
+
     %{args: args, uuid: uuid, lock: lock} = options
     transport = state.transport
 
