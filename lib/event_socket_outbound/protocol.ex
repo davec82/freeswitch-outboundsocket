@@ -1,6 +1,5 @@
 defmodule EventSocketOutbound.Protocol do
   use GenServer
-  require Logger
 
   @moduledoc """
   Protocol handler starts a connection process and defines logic for FreeSWITCH events and protocol.
@@ -372,7 +371,6 @@ defmodule EventSocketOutbound.Protocol do
   defp event_cb(%{"Content-Type" => "text/event-plain"} = event, state) do
     call_mgt_adapter = state.call_mgt_adapter
     call_mgt_adapter.onEvent(state.call_mgt, event)
-    Logger.error("state on event cb text plain is #{inspect(state)}")
     state
   end
 
