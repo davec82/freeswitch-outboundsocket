@@ -39,7 +39,7 @@ defmodule App.Mixfile do
       {:credo, "~> 0.8.10", only: [:dev, :test]},
       {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
       {:ranch, "~> 1.3.2"},
-      {:ex_doc, "~> 0.18", only: :docs, runtime: false},
+      {:ex_doc, "~> 0.19", only: :docs, runtime: false},
       {:inch_ex, "~> 0.5", only: :docs},
       {:excoveralls, "~> 0.7.5", only: :test},
       {:stream_data, "~> 0.3", only: :test}
