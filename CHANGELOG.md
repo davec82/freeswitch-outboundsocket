@@ -1,4 +1,7 @@
 ## Changelog
+## [v0.3.0]
+* Fix data parser
+
 ## [v0.2.0]
 
 * Reply commands to waiting client if a disconnect event is received
