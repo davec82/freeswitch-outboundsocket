@@ -1,5 +1,11 @@
 ## Changelog
+## [v0.4.0]
+
+* Updated :ranch to 1.7
+* Updated :credo, :excoveralls to latest versions
+
 ## [v0.3.0]
+
 * Fix data parser
 
 ## [v0.2.0]
