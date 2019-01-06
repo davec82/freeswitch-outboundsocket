@@ -13,9 +13,8 @@ defmodule EventSocketOutbound do
 
     :ranch.start_listener(
       ref,
-      acceptors,
       :ranch_tcp,
-      [{:port, port}],
+      %{num_acceptors: acceptors, socket_opts: [{:port, port}]},
       EventSocketOutbound.Protocol,
       :ranch
     )
