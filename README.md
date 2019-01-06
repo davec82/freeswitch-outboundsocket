@@ -41,13 +41,13 @@ where MySample.Call will be a module that implements EventSocketOutbound.CallMgm
 {:ok, #PID<0.174.0>}
 ```
 
-3. Add the child specs to your supervision tree, using `EventSocketOutbound.Protocol` as protocol. For more info, refer to ranch [docs](https://ninenines.eu/docs/en/ranch/1.4/guide/embedded/).
+3. Add the child specs to your supervision tree, using `EventSocketOutbound.Protocol` as protocol. For more info, refer to ranch [docs](https://ninenines.eu/docs/en/ranch/1.7/guide/embedded/).
 ```elixir
-child_spec = :ranch.child_spec(ref, 10, :ranch_tcp, [{:port, 8084}], EventSocketOutbound.Protocol :ranch)
+child_spec = :ranch.child_spec(ref, :ranch_tcp, %{num_acceptors: acceptors, socket_opts: [{:port, port}]},, EventSocketOutbound.Protocol :ranch)
 ```
 
 ## Copyright and License
 
-Copyright (c) 2018, Davide Colombo.
+Copyright (c) 2019, Davide Colombo.
 
 EventSocketOutbound source code is licensed under the [MIT License](LICENSE.md).
