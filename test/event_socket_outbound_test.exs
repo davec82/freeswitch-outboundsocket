@@ -23,7 +23,7 @@ defmodule EventSocketOutbound.Test do
       {:ok, _} = EventSocketOutbound.start(acceptors: 25, ref: ref)
       infos = :ranch.info()
       {^ref, options} = Enum.at(infos, 0)
-      assert options[:num_acceptors] == 25
+      assert get_in(options, [:transport_options, :num_acceptors]) == 25
       :ok = :ranch.stop_listener(ref)
     end
   end
