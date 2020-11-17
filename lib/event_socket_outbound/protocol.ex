@@ -102,12 +102,10 @@ defmodule EventSocketOutbound.Protocol do
 
   @spec start_link(reference, module, any) :: {:ok, pid}
   def start_link(ref, transport, module_protocol) do
-    {:ok, socket} = get_socket(ref)
 
     pid =
       :proc_lib.spawn_link(__MODULE__, :init, [
         ref,
-        socket,
         transport,
         module_protocol
       ])
@@ -116,8 +114,8 @@ defmodule EventSocketOutbound.Protocol do
   end
 
   @doc false
-  def init(ref, socket, transport, module_protocol) do
-    :ok = module_protocol.accept_ack(ref)
+  def init(ref, transport, _module_protocol) do
+    {:ok, socket} = get_socket(ref)
     :ok = transport.setopts(socket, [:binary, packet: :raw, active: true])
 
     config =
