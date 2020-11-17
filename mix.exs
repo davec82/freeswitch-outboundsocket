@@ -36,12 +36,12 @@ defmodule App.Mixfile do
 
   defp deps do
     [
-      {:credo, "~> 1.0", only: [:dev, :test]},
-      {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.5", only: [:dev, :test]},
+      {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:ranch, "~> 2.0"},
       {:ex_doc, "~> 0.19", only: :docs, runtime: false},
       {:inch_ex, "~> 0.5", only: :docs},
-      {:excoveralls, "~> 0.10", only: :test},
+      {:excoveralls, "~> 0.13.3", only: :test},
       {:stream_data, "~> 0.3", only: :test}
     ]
   end

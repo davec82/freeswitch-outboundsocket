@@ -1,4 +1,5 @@
 defmodule EventSocketOutbound.Test.RanchTcp do
+  @moduledoc false
   def send(pid, data) do
     parsed_command = parse_data(data)
     Kernel.send(pid, parsed_command)

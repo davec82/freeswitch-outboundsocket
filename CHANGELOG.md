@@ -1,4 +1,9 @@
 ## Changelog
+## [v0.5.0]
+
+* Updated :ranch to 2.0
+* Updated :dialyxir, :credo, :excoveralls to latest versions
+
 ## [v0.4.0]
 
 * Updated :ranch to 1.7

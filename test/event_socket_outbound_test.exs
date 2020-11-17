@@ -398,7 +398,7 @@ defmodule EventSocketOutbound.Test do
     end
   end
 
-  defp start_protocol_server() do
+  defp start_protocol_server do
     {:ok, conn_pid} =
       EventProtocol.start_link(
         "ref",
@@ -409,14 +409,14 @@ defmodule EventSocketOutbound.Test do
     conn_pid
   end
 
-  defp load_call_mgt_module() do
+  defp load_call_mgt_module do
     test_pid = self()
     Application.put_env(:event_socket_outbound, :test_pid, test_pid)
     Application.put_env(:event_socket_outbound, :socket, test_pid)
     test_pid
   end
 
-  defp call_mgt() do
+  defp call_mgt do
     defmodule Call do
       use GenServer
 

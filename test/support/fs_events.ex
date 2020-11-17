@@ -1,5 +1,6 @@
 defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
-  def command_reply_and_event_part1() do
+  @moduledoc false
+  def command_reply_and_event_part1 do
     """
     Content-Type: command/reply
     Reply-Text: +OK
@@ -49,7 +50,7 @@ defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
     """
   end
 
-  def command_reply_and_event_part2() do
+  def command_reply_and_event_part2 do
     """
     text: from_external
     Caller-Channel-Name: sofia/external/nobody%40192.168.1.235%3A5060
@@ -91,7 +92,7 @@ defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
     """
   end
 
-  def command_reply_and_event_part3() do
+  def command_reply_and_event_part3 do
     """
     ACK,%20PUBLISH,%20CANCEL,%20BYE,%20OPTIONS,%20ACK,%20INVITE
     variable_sip_req_user: 123
@@ -134,7 +135,7 @@ defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
     """
   end
 
-  def command_reply_and_event_part4() do
+  def command_reply_and_event_part4 do
     """
     D42001F%3Bmax-br%3D1920%3Bmax-mbps%3D115200%3Bmax-fs%3D3840
     variable_rtp_use_video_codec_rate: 90000
@@ -154,7 +155,7 @@ defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
     """
   end
 
-  def command_reply_and_event_part5() do
+  def command_reply_and_event_part5 do
     """
     ps%3D115200%3Bmax-fs%3D3840%3Bpacketization-mode%3D1%0D%0Aa%3Drtpmap%3A107%20H264/90000%0D%0Aa%3Dfmtp%3A107%20profile-level-id%3D64001F%3Bmax-br%3D1920%3Bmax-mbps%3D115200%3Bmax-fs%3D3840%3Bpacketization-mode%3D1%0D%0Aa%3Drtcp-fb%3A*%20nack%0D%0Aa%3Drtcp-fb%3A*%20ccm%20fir%0D%0Aa%3Drtcp-fb%3A*%20ccm%20tmmbr%0D%0Aa%3Drtcp-fb%3A*%20nack%20pli%0D%0Aa%3Dec-rtcp-fb%3A*%20vsr%0D%0Aa%3Dextmapasb%3A1/sendrecv%0D%0Aa%3Dcontent%3Amain%0D%0Aa%3Dlabel%3A11%0D%0Am%3Dapplication%205071%20TCP/TLS/BFCP%20*%0D%0Aa%3Dfingerprint%3Asha-1%2083%3A12%3A35%3A93%3A8C%3A47%3AE2%3A9D%3AAE%3A7D%3ADD%3AD9%3ADD%3A36%3AB5%3ADD%3A05%3AB4%3A16%3AD2%0D%0Aa%3Dconfid%3A2%0D%0Aa%3Duserid%3A1%0D%0Aa%3Dfloorid%3A2%20mstrm%3A12%0D%0Aa%3Dfloorctrl%3Ac-s%0D%0Aa%3Dsetup%3Aactpass%0D%0Aa%3Dconnection%3Anew%0D%0Am%3Dapplication%207684%20RTP/AVP%20100%0D%0Aa%3Drtpmap%3A100%20H224/4800%0D%0A
     variable_ep_codec_string: mod_spandsp.G722%408000h%4020i%4064000b,CORE_PCM_MODULE.PCMA%408000h%4020i%4064000b,CORE_PCM_MODULE.PCMU%408000h%4020i%4064000b,mod_h26x.H264~profile-level-id%3D42001F%3Bmax-br%3D1920%3Bmax-mbps%3D115200%3Bmax-fs%3D3840,mod_h26x.H264~profile-level-id%3D42001F%3Bmax-br%3D1920%3Bmax-mbps%3D115200%3Bmax-fs%3D3840%3Bpacketization-mode%3D1,mod_h26x.H264~profile-level-id%3D64001F%3Bmax-br%3D1920%3Bmax-mbps%3D115200%3Bmax-fs%3D3840%3Bpacketization-mode%3D1
@@ -164,7 +165,7 @@ defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
     """
   end
 
-  def command_reply_and_event_part6() do
+  def command_reply_and_event_part6 do
     """
     iable_audio_media_flow: sendrecv
     variable_remote_media_ip: 192.168.1.235
@@ -189,7 +190,7 @@ defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
     """
   end
 
-  def command_reply_and_event_part7() do
+  def command_reply_and_event_part7 do
     """
     _sip_cseq: 4
     variable_sip_call_id: lx8cfJtastATElaUfXRYxDWm0nFpbt3qjdeagGA3bYcw
@@ -219,7 +220,7 @@ defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
     """
   end
 
-  def channel_state() do
+  def channel_state do
     """
     Channel-State: CS_EXECUTE
     Channel-State-Number: 4
@@ -242,7 +243,7 @@ defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
     """
   end
 
-  def channel_data() do
+  def channel_data do
     """
     Event-Name: CHANNEL_DATA
     Core-UUID: 6cd7d004-e3c9-11e7-b0f3-73bec77e82ec
@@ -443,7 +444,7 @@ defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
     """
   end
 
-  def command_reply() do
+  def command_reply do
     """
     Content-Type: command/reply
     Reply-Text: +OK
@@ -452,7 +453,7 @@ defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
     """
   end
 
-  def disconnect_header() do
+  def disconnect_header do
     """
     Content-Type: text/disconnect-notice
     Controlled-Session-UUID: 4192e98c-e569-11e7-b747-73bec77e82ec
@@ -462,7 +463,7 @@ defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
     """
   end
 
-  def disconnect() do
+  def disconnect do
     """
     Disconnected, goodbye.
     See you at ClueCon! http://www.cluecon.com/
@@ -470,7 +471,7 @@ defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
     """
   end
 
-  def api_response() do
+  def api_response do
     """
     Content-Type: api/response
     Content-Length: 6872
