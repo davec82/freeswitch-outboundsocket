@@ -31,7 +31,7 @@ defmodule EventSocketOutbound.Test do
   describe "send commands and receive events" do
     test "eventplain command" do
       test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      conn_pid = start_protocol_server()
 
       Task.start(fn ->
         EventProtocol.eventplain(conn_pid, "CHANNEL_EXECUTE_COMPLETE")
@@ -50,7 +50,7 @@ defmodule EventSocketOutbound.Test do
 
     test "split received data in random chunks" do
       test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      conn_pid = start_protocol_server()
 
       data =
         SoftswitchEvent.command_reply() <>
@@ -86,7 +86,7 @@ defmodule EventSocketOutbound.Test do
 
     test "split received data once in a radom position" do
       test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      conn_pid = start_protocol_server()
 
       data =
         SoftswitchEvent.command_reply() <>
@@ -125,7 +125,7 @@ defmodule EventSocketOutbound.Test do
       part6 = SoftswitchEvent.command_reply_and_event_part6()
       part7 = SoftswitchEvent.command_reply_and_event_part7()
       test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      conn_pid = start_protocol_server()
 
       Task.start(fn ->
         EventProtocol.answer(conn_pid)
@@ -147,22 +147,22 @@ defmodule EventSocketOutbound.Test do
 
     test "parse event plain" do
       # Event channel state
-      test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      load_call_mgt_module()
+      conn_pid = start_protocol_server()
       send(conn_pid, {:tcp, "socket", SoftswitchEvent.channel_state_header()})
       send(conn_pid, {:tcp, "socket", SoftswitchEvent.channel_state()})
       assert_receive %{event: %{"Event-Name" => "CHANNEL_STATE"}}, 5000
     end
 
     test "parse fake event" do
-      test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      load_call_mgt_module()
+      conn_pid = start_protocol_server()
       send(conn_pid, {:tcp, "socket", "fake\nevent\n\n"})
     end
 
     test "parse command and fake event" do
       test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      conn_pid = start_protocol_server()
 
       Task.start(fn ->
         EventProtocol.connect(conn_pid)
@@ -183,7 +183,7 @@ defmodule EventSocketOutbound.Test do
 
     test "connect command" do
       test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      conn_pid = start_protocol_server()
 
       Task.start(fn ->
         EventProtocol.connect(conn_pid)
@@ -202,7 +202,7 @@ defmodule EventSocketOutbound.Test do
 
     test "myevents command" do
       test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      conn_pid = start_protocol_server()
 
       Task.start(fn ->
         EventProtocol.myevents(conn_pid)
@@ -221,7 +221,7 @@ defmodule EventSocketOutbound.Test do
 
     test "answer command" do
       test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      conn_pid = start_protocol_server()
 
       Task.start(fn ->
         EventProtocol.answer(conn_pid)
@@ -240,7 +240,7 @@ defmodule EventSocketOutbound.Test do
 
     test "conference command" do
       test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      conn_pid = start_protocol_server()
 
       Task.start(fn ->
         EventProtocol.conference(conn_pid, "admin:example@default")
@@ -259,7 +259,7 @@ defmodule EventSocketOutbound.Test do
 
     test "hangup command" do
       test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      conn_pid = start_protocol_server()
 
       Task.start(fn ->
         EventProtocol.hangup(conn_pid)
@@ -278,7 +278,7 @@ defmodule EventSocketOutbound.Test do
 
     test "execute command" do
       test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      conn_pid = start_protocol_server()
 
       Task.start(fn ->
         EventProtocol.execute(conn_pid, "voicemail", "default $${domain} 1000")
@@ -297,7 +297,7 @@ defmodule EventSocketOutbound.Test do
 
     test "api command" do
       test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      conn_pid = start_protocol_server()
 
       Task.start(fn ->
         EventProtocol.api(
@@ -321,7 +321,7 @@ defmodule EventSocketOutbound.Test do
 
     test "filter command" do
       test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      conn_pid = start_protocol_server()
 
       Task.start(fn ->
         EventProtocol.filter(
@@ -344,7 +344,7 @@ defmodule EventSocketOutbound.Test do
 
     test "linger command" do
       test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      conn_pid = start_protocol_server()
 
       Task.start(fn ->
         EventProtocol.linger(conn_pid)
@@ -362,8 +362,8 @@ defmodule EventSocketOutbound.Test do
     end
 
     test "tcp connection closed" do
-      test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      load_call_mgt_module()
+      conn_pid = start_protocol_server()
       Process.flag(:trap_exit, true)
       ref = Process.monitor(conn_pid)
       send(conn_pid, {:tcp_closed, "socket"})
@@ -371,8 +371,8 @@ defmodule EventSocketOutbound.Test do
     end
 
     test "disconnect event" do
-      test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      load_call_mgt_module()
+      conn_pid = start_protocol_server()
       Process.flag(:trap_exit, true)
       ref = Process.monitor(conn_pid)
       send(conn_pid, {:tcp, "socket", SoftswitchEvent.disconnect_header()})
@@ -382,7 +382,7 @@ defmodule EventSocketOutbound.Test do
 
     test "receive disconnect event before reply a command" do
       test_pid = load_call_mgt_module()
-      conn_pid = start_protocol_server(test_pid)
+      conn_pid = start_protocol_server()
       Process.flag(:trap_exit, true)
 
       Task.start(fn ->
@@ -398,11 +398,10 @@ defmodule EventSocketOutbound.Test do
     end
   end
 
-  defp start_protocol_server(test_pid) do
+  defp start_protocol_server() do
     {:ok, conn_pid} =
       EventProtocol.start_link(
         "ref",
-        test_pid,
         EventSocketOutbound.Test.RanchTcp,
         EventSocketOutbound.Test.Ranch
       )
@@ -413,6 +412,7 @@ defmodule EventSocketOutbound.Test do
   defp load_call_mgt_module() do
     test_pid = self()
     Application.put_env(:event_socket_outbound, :test_pid, test_pid)
+    Application.put_env(:event_socket_outbound, :socket, test_pid)
     test_pid
   end
 

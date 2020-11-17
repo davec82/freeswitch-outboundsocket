@@ -100,8 +100,10 @@ defmodule EventSocketOutbound.Protocol do
     GenServer.call(pid, {:answer})
   end
 
-  @spec start_link(reference, any, module, any) :: {:ok, pid}
-  def start_link(ref, socket, transport, module_protocol) do
+  @spec start_link(reference, module, any) :: {:ok, pid}
+  def start_link(ref, transport, module_protocol) do
+    {:ok, socket} = get_socket(ref)
+
     pid =
       :proc_lib.spawn_link(__MODULE__, :init, [
         ref,
@@ -413,5 +415,16 @@ defmodule EventSocketOutbound.Protocol do
 
     transport.send(state.socket, "event-lock: " <> lock <> "\n")
     transport.send(state.socket, "\n\n")
+  end
+
+  defp get_socket(ref) do
+    case Application.get_env(
+           :event_socket_outbound,
+           :socket,
+           nil
+         ) do
+      nil -> :ranch.handshake(ref)
+      socket -> {:ok, socket}
+    end
   end
 end
