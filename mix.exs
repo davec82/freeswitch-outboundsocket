@@ -7,7 +7,7 @@ defmodule App.Mixfile do
     [
       app: :event_socket_outbound,
       version: @version,
-      elixir: "~> 1.6",
+      elixir: "~> 1.8",
       build_embedded: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
