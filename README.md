@@ -11,7 +11,7 @@ Add event_socket_outbound to your list of dependencies in `mix.exs`:
 
 ```elixir
     def deps do
-      [{:event_socket_outbound, "~> 0.5.0"}]
+      [{:event_socket_outbound, "~> 0.5.1"}]
     end
 ```
 ## Getting started
@@ -48,6 +48,6 @@ child_spec = :ranch.child_spec(ref, :ranch_tcp, %{num_acceptors: acceptors, sock
 
 ## Copyright and License
 
-Copyright (c) 2020, Davide Colombo.
+Copyright (c) 2021, Davide Colombo.
 
 EventSocketOutbound source code is licensed under the [MIT License](LICENSE.md).
