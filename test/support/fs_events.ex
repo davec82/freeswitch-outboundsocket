@@ -706,4 +706,20 @@ defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
     </result>
     """
   end
+
+  def event_with_utf8_body do
+    """
+    Content-Length: 28
+    Content-Type: text/event-plain
+
+    Content-Length: 9
+
+    ࠀࠀࠀ
+    Content-Length: 19
+    Content-Type: text/event-plain
+
+    Content-Length: 0
+
+    """
+  end
 end

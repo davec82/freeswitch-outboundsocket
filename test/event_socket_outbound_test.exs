@@ -415,6 +415,12 @@ defmodule EventSocketOutbound.Test do
       assert_receive %{event: %{body_length: 421}}, 5000
     end
 
+    test "parse events containing utf8 characters" do
+      load_call_mgt_module()
+      conn_pid = start_protocol_server()
+      send(conn_pid, {:tcp, "socket", SoftswitchEvent.event_with_utf8_body()})
+      assert_receive %{event: %{body: "ࠀࠀࠀ"}}, 5000
+    end
   end
 
   defp start_protocol_server do

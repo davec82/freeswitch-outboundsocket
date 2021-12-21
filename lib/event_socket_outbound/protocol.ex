@@ -268,7 +268,7 @@ defmodule EventSocketOutbound.Protocol do
        ) do
     case String.length(rest) >= content_length do
       true ->
-        {event_content, new_rest} = String.split_at(rest, content_length)
+        <<event_content::binary-size(content_length), new_rest::binary>> = rest
         event = parse_event(header, event_content)
         new_state = event_cb(event, state)
         parse_buffer(new_state, new_rest)
@@ -320,7 +320,7 @@ defmodule EventSocketOutbound.Protocol do
   defp parse_body(data, acc) do
     if body_length = Map.get(acc, "Content-Length") do
       body_length = :erlang.binary_to_integer(body_length)
-      {body, _} = String.split_at(data, body_length)
+      <<body::binary-size(body_length), _::binary>> = data
       Map.put(acc, :body, body)
       |> Map.delete("Content-Length")
       |> Map.put(:body_length, body_length)
