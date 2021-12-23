@@ -317,16 +317,16 @@ defmodule EventSocketOutbound.Protocol do
     end
   end
 
-  defp parse_body(data, acc) do
-    if body_length = Map.get(acc, "Content-Length") do
-      body_length = :erlang.binary_to_integer(body_length)
-      <<body::binary-size(body_length), _::binary>> = data
-      Map.put(acc, :body, body)
-      |> Map.delete("Content-Length")
-      |> Map.put(:body_length, body_length)
-    else
-      acc
-    end
+  defp parse_body(data, %{"Content-Length" => body_length} = acc) do
+    body_length = :erlang.binary_to_integer(body_length)
+    <<body::binary-size(body_length), _::binary>> = data
+    Map.put(acc, :body, body)
+    |> Map.delete("Content-Length")
+    |> Map.put(:body_length, body_length)
+  end
+
+  defp parse_body(_data, acc) do
+    acc
   end
 
   defp parse_value(value, decode_value) do
