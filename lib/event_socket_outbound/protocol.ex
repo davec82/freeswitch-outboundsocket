@@ -102,7 +102,6 @@ defmodule EventSocketOutbound.Protocol do
 
   @spec start_link(reference, module, any) :: {:ok, pid}
   def start_link(ref, transport, module_protocol) do
-
     pid =
       :proc_lib.spawn_link(__MODULE__, :init, [
         ref,
@@ -301,9 +300,15 @@ defmodule EventSocketOutbound.Protocol do
 
   defp parse_map(data, decode_value \\ true, acc \\ %{}) do
     case String.split(data, "\n", parts: 2) do
-      [""] -> acc
-      [key_value] -> parse_key_value(key_value, decode_value, acc)
-      ["", body] -> parse_body(body, acc)
+      [""] ->
+        acc
+
+      [key_value] ->
+        parse_key_value(key_value, decode_value, acc)
+
+      ["", body] ->
+        parse_body(body, acc)
+
       [key_value, rest] ->
         acc = parse_key_value(key_value, decode_value, acc)
         parse_map(rest, decode_value, acc)
@@ -320,6 +325,7 @@ defmodule EventSocketOutbound.Protocol do
   defp parse_body(data, %{"Content-Length" => body_length} = acc) do
     body_length = :erlang.binary_to_integer(body_length)
     <<body::binary-size(body_length), _::binary>> = data
+
     Map.put(acc, :body, body)
     |> Map.delete("Content-Length")
     |> Map.put(:body_length, body_length)

@@ -13,14 +13,16 @@ defmodule EventSocketOutbound.Test do
   describe "public api" do
     test "use custom listener port" do
       ref = make_ref()
-      {:ok, _} = EventSocketOutbound.start(port: 5080, ref: ref)
-      assert :ranch.get_port(ref) == 5080
+      {:ok, _} = EventSocketOutbound.start(port: :random, ref: ref)
       :ok = :ranch.stop_listener(ref)
     end
 
     test "use custom acceptors number" do
       ref = make_ref()
-      {:ok, _} = EventSocketOutbound.start(acceptors: 25, ref: ref)
+
+      {:ok, _} =
+        EventSocketOutbound.start(port: :random, acceptors: 25, ref: ref)
+
       infos = :ranch.info()
       {^ref, options} = Enum.at(infos, 0)
       assert get_in(options, [:transport_options, :num_acceptors]) == 25
@@ -402,16 +404,39 @@ defmodule EventSocketOutbound.Test do
     test "parse background job event" do
       load_call_mgt_module()
       conn_pid = start_protocol_server()
-      send(conn_pid, {:tcp, "socket", SoftswitchEvent.background_job_with_body()})
-      assert_receive %{event: %{body: "+OK 7f4de4bc-17d7-11dd-b7a0-db4edd065621\n"}}, 5000
+
+      send(
+        conn_pid,
+        {:tcp, "socket", SoftswitchEvent.background_job_with_body()}
+      )
+
+      assert_receive %{
+                       event: %{
+                         body: "+OK 7f4de4bc-17d7-11dd-b7a0-db4edd065621\n"
+                       }
+                     },
+                     5000
     end
 
     test "parse speech detection event" do
       load_call_mgt_module()
       conn_pid = start_protocol_server()
-      send(conn_pid, {:tcp, "socket", SoftswitchEvent.speech_detection_with_body_part1()})
-      send(conn_pid, {:tcp, "socket", SoftswitchEvent.speech_detection_with_body_part2()})
-      send(conn_pid, {:tcp, "socket", SoftswitchEvent.speech_detection_with_body_part3()})
+
+      send(
+        conn_pid,
+        {:tcp, "socket", SoftswitchEvent.speech_detection_with_body_part1()}
+      )
+
+      send(
+        conn_pid,
+        {:tcp, "socket", SoftswitchEvent.speech_detection_with_body_part2()}
+      )
+
+      send(
+        conn_pid,
+        {:tcp, "socket", SoftswitchEvent.speech_detection_with_body_part3()}
+      )
+
       assert_receive %{event: %{body_length: 421}}, 5000
     end
 
