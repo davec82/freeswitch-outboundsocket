@@ -249,7 +249,7 @@ defmodule EventSocketOutbound.Protocol do
 
           false ->
             decode_value = is_channel_data_event?(data)
-            event = parse_key_value(data, decode_value)
+            event = parse_map(data, decode_value)
             new_state = event_cb(event, state)
             parse_buffer(new_state, rest)
         end
@@ -268,8 +268,8 @@ defmodule EventSocketOutbound.Protocol do
        ) do
     case String.length(rest) >= content_length do
       true ->
-        {event_body, new_rest} = String.split_at(rest, content_length)
-        event = parse_event(header, event_body)
+        <<event_content::binary-size(content_length), new_rest::binary>> = rest
+        event = parse_event(header, event_content)
         new_state = event_cb(event, state)
         parse_buffer(new_state, new_rest)
 
@@ -285,36 +285,48 @@ defmodule EventSocketOutbound.Protocol do
     end
   end
 
-  defp parse_event(data, body) do
+  defp parse_event(data, content) do
     case String.contains?(data, ["text/disconnect-notice", "api/response"]) do
       true ->
-        header_map = parse_key_value(data)
-        body_map = parse_rawdata(body)
+        header_map = parse_map(data)
+        body_map = parse_rawdata(content)
         Map.merge(header_map, body_map)
 
       false ->
-        header_map = parse_key_value(data)
-        body_map = parse_key_value(body)
+        header_map = parse_map(data)
+        body_map = parse_map(content)
         Map.merge(header_map, body_map)
     end
   end
 
-  defp parse_key_value(data, decode_value \\ true) do
-    values =
-      data
-      |> String.trim()
-      |> String.replace(" ", "")
-      |> String.split("\n")
+  defp parse_map(data, decode_value \\ true, acc \\ %{}) do
+    case String.split(data, "\n", parts: 2) do
+      [""] -> acc
+      [key_value] -> parse_key_value(key_value, decode_value, acc)
+      ["", body] -> parse_body(body, acc)
+      [key_value, rest] ->
+        acc = parse_key_value(key_value, decode_value, acc)
+        parse_map(rest, decode_value, acc)
+    end
+  end
 
-    Enum.reduce(values, %{}, fn v, acc ->
-      case String.split(v, ":") do
-        [key, value] ->
-          Map.put(acc, key, parse_value(value, decode_value))
+  defp parse_key_value(key_value, decode_value, acc) do
+    case String.split(key_value, ": ") do
+      [key, value] -> Map.put(acc, key, parse_value(value, decode_value))
+      _ -> acc
+    end
+  end
 
-        _ ->
-          acc
-      end
-    end)
+  defp parse_body(data, %{"Content-Length" => body_length} = acc) do
+    body_length = :erlang.binary_to_integer(body_length)
+    <<body::binary-size(body_length), _::binary>> = data
+    Map.put(acc, :body, body)
+    |> Map.delete("Content-Length")
+    |> Map.put(:body_length, body_length)
+  end
+
+  defp parse_body(_data, acc) do
+    acc
   end
 
   defp parse_value(value, decode_value) do

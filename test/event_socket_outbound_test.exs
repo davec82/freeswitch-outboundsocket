@@ -398,6 +398,31 @@ defmodule EventSocketOutbound.Test do
     end
   end
 
+  describe "events with header, key-value and body" do
+    test "parse background job event" do
+      load_call_mgt_module()
+      conn_pid = start_protocol_server()
+      send(conn_pid, {:tcp, "socket", SoftswitchEvent.background_job_with_body()})
+      assert_receive %{event: %{body: "+OK 7f4de4bc-17d7-11dd-b7a0-db4edd065621\n"}}, 5000
+    end
+
+    test "parse speech detection event" do
+      load_call_mgt_module()
+      conn_pid = start_protocol_server()
+      send(conn_pid, {:tcp, "socket", SoftswitchEvent.speech_detection_with_body_part1()})
+      send(conn_pid, {:tcp, "socket", SoftswitchEvent.speech_detection_with_body_part2()})
+      send(conn_pid, {:tcp, "socket", SoftswitchEvent.speech_detection_with_body_part3()})
+      assert_receive %{event: %{body_length: 421}}, 5000
+    end
+
+    test "parse events containing utf8 characters" do
+      load_call_mgt_module()
+      conn_pid = start_protocol_server()
+      send(conn_pid, {:tcp, "socket", SoftswitchEvent.event_with_utf8_body()})
+      assert_receive %{event: %{body: "ࠀࠀࠀ"}}, 5000
+    end
+  end
+
   defp start_protocol_server do
     {:ok, conn_pid} =
       EventProtocol.start_link(

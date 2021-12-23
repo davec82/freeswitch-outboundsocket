@@ -640,4 +640,86 @@ defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
 
     """
   end
+
+  def background_job_with_body do
+    """
+    Content-Length: 583
+    Content-Type: text/event-plain
+
+    Job-UUID: 7f4db78a-17d7-11dd-b7a0-db4edd065621
+    Job-Command: originate
+    Job-Command-Arg: sofia/default/1005%20'%26park'
+    Event-Name: BACKGROUND_JOB
+    Core-UUID: 42bdf272-16e6-11dd-b7a0-db4edd065621
+    FreeSWITCH-Hostname: ser
+    FreeSWITCH-IPv4: 192.168.1.104
+    FreeSWITCH-IPv6: 127.0.0.1
+    Event-Date-Local: 2008-05-02%2007%3A37%3A03
+    Event-Date-GMT: Thu,%2001%20May%202008%2023%3A37%3A03%20GMT
+    Event-Date-timestamp: 1209685023894968
+    Event-Calling-File: mod_event_socket.c
+    Event-Calling-Function: api_exec
+    Event-Calling-Line-Number: 609
+    Content-Length: 41
+
+    +OK 7f4de4bc-17d7-11dd-b7a0-db4edd065621
+    """
+  end
+
+  def speech_detection_with_body_part1 do
+    """
+    Content-Length: 860
+    Content-Type: text/event-plain
+
+    Speech-Type: detected-speech
+    Event-Name: DETECTED_SPEECH
+    Core-UUID: aac0f73e-b822-e54c-a02a-06a839ca3e5a
+    FreeSWITCH-Hostname: AMONROY
+    FreeSWITCH-IPv4: 192.168.1.220
+    FreeSWITCH-IPv6: ::1
+    Event-Date-Local: 2009-01-26 16:07:24
+    Event-Date-GMT: Mon, 26 Jan 2009 22:07:24 GMT
+    Event-Date-Timestamp: 1233007644906250
+    Event-Calling-File: switch_ivr_async.c
+    """
+  end
+
+  def speech_detection_with_body_part2 do
+    """
+    Event-Calling-Function: speech_thread
+    Event-Calling-Line-Number: 1758
+    Content-Length: 421
+
+    <result grammar="<request1@form-level.store>#nombres">
+        <interpretation grammar="<request1@form-level.store>#nombres" confidence="0.494643">
+            <instance confidence="0.494643">arturo monroy</instance>
+            <input mode="speech" confidence="0.494643">\
+    """
+  end
+
+  def speech_detection_with_body_part3 do
+    """
+                <input confidence="0.313102">arturo</input>
+                <input confidence="0.618854">monroy</input>
+            </input>
+        </interpretation>
+    </result>
+    """
+  end
+
+  def event_with_utf8_body do
+    """
+    Content-Length: 28
+    Content-Type: text/event-plain
+
+    Content-Length: 9
+
+    ࠀࠀࠀ
+    Content-Length: 19
+    Content-Type: text/event-plain
+
+    Content-Length: 0
+
+    """
+  end
 end
