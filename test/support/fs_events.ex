@@ -715,11 +715,6 @@ defmodule EventSocketOutbound.Test.Support.SoftswitchEvent do
     Content-Length: 9
 
     ࠀࠀࠀ
-    Content-Length: 19
-    Content-Type: text/event-plain
-
-    Content-Length: 0
-
     """
   end
 end

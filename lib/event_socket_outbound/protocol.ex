@@ -265,7 +265,7 @@ defmodule EventSocketOutbound.Protocol do
          rest,
          content_length
        ) do
-    case String.length(rest) >= content_length do
+    case byte_size(rest) >= content_length do
       true ->
         <<event_content::binary-size(content_length), new_rest::binary>> = rest
         event = parse_event(header, event_content)
